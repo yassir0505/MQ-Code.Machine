@@ -7,7 +7,6 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.Drawing.Imaging;
 using System.Drawing;
-using System.IO;
 
 namespace WebApplication1.Pages
 {
@@ -74,9 +73,7 @@ namespace WebApplication1.Pages
 
             if (role == "man")
             {
-                string qrContent = $"https://localhost:7260/Machine/Details?id={machine.Id}";
-                string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "qr");
-                Directory.CreateDirectory(folderPath);
+                string qrContent = $"https://mq-machine.onrender.com/Machine/Details?id={machine.Id}";
 
                 using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
                 using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrContent, QRCodeGenerator.ECCLevel.Q))
@@ -87,11 +84,10 @@ namespace WebApplication1.Pages
                     qrCodeImage.Save(stream, ImageFormat.Png);
                     byte[] qrBytes = stream.ToArray();
 
-                    string pdfPath = Path.Combine(folderPath, $"machine_{machine.Id}.pdf");
-                    using (FileStream fs = new FileStream(pdfPath, FileMode.Create))
+                    using (MemoryStream pdfStream = new MemoryStream())
                     {
                         Document doc = new Document(PageSize.A4);
-                        PdfWriter.GetInstance(doc, fs);
+                        PdfWriter.GetInstance(doc, pdfStream);
                         doc.Open();
 
                         string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "logo.png");
@@ -104,17 +100,11 @@ namespace WebApplication1.Pages
                         }
 
                         var titleFont = FontFactory.GetFont("Arial", 18f, iTextSharp.text.Font.BOLD, BaseColor.BLACK);
-                        var title = new Paragraph("Machine QR Code\n\n", titleFont)
-                        {
-                            Alignment = Element.ALIGN_CENTER
-                        };
+                        var title = new Paragraph("Machine QR Code\n\n", titleFont) { Alignment = Element.ALIGN_CENTER };
                         doc.Add(title);
 
                         var idFont = FontFactory.GetFont("Arial", 14f, iTextSharp.text.Font.BOLD, BaseColor.BLACK);
-                        var id = new Paragraph($"Machine ID: {machine.Id}\n\n", idFont)
-                        {
-                            Alignment = Element.ALIGN_CENTER
-                        };
+                        var id = new Paragraph($"Machine ID: {machine.Id}\n\n", idFont) { Alignment = Element.ALIGN_CENTER };
                         doc.Add(id);
 
                         var qrImg = iTextSharp.text.Image.GetInstance(qrBytes);
@@ -123,10 +113,11 @@ namespace WebApplication1.Pages
                         doc.Add(qrImg);
 
                         doc.Close();
+
+                        byte[] pdfBytes = pdfStream.ToArray();
+                        return File(pdfBytes, "application/pdf", $"machine_{machine.Id}.pdf");
                     }
                 }
-
-                Message = "✅ Machine created and QR Code PDF generated!";
             }
             else
             {
