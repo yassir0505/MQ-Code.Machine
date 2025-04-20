@@ -12,8 +12,8 @@ builder.Services.AddSession();
 
 var app = builder.Build();
 
-// ✅ Configure the HTTP request pipeline
-if (!app.Environment.IsDevelopment())
+// ✅ Force Development mode temporarily (to see full errors)
+if (false) // Normally: if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
