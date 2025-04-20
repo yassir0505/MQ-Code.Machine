@@ -46,5 +46,11 @@ using (var scope = app.Services.CreateScope())
 
     context.SaveChanges();
 }
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<MQContext>();
+    db.Database.EnsureCreated();
+}
+
 
 app.Run();
