@@ -1,0 +1,46 @@
+﻿@page
+@model WebApplication1.Pages.Home.DashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex align-items-center mb-3">
+    <a href="/Home/Home" class="btn btn-link p-0 me-2">
+        <i class="bi bi-arrow-left fs-4"></i>
+    </a>
+    <h4 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i> Dashboard</h4>
+</div>
+
+@if (Model.TotalMachines == 0)
+{
+    <div class="alert alert-info text-center">No machines available for statistics.</div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">✅ Working Machines</h5>
+                    <p class="card-text display-4">@Model.WorkingCount</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">🛠 Being Repaired</h5>
+                    <p class="card-text display-4">@Model.RepairingCount</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">❌ Not Repairable</h5>
+                    <p class="card-text display-4">@Model.NotRepairableCount</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}

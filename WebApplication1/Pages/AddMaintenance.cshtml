@@ -1,0 +1,168 @@
+﻿@page
+@model WebApplication1.Pages.AddMaintenanceModel
+@{
+    ViewData["Title"] = "Add Maintenance Entry";
+}
+
+<!-- ✅ BACK ICON TOP LEFT -->
+<div class="d-flex align-items-center mb-3">
+    <a href="/Home/Home" class="me-2 text-decoration-none">
+        <i class="bi bi-arrow-left fs-4"></i>
+    </a>
+    <h3 class="mb-0">🛠 Add Maintenance Entry</h3>
+</div>
+
+<div class="scanner-card" id="scanCard">
+    <h4 class="text-center">🔍 Scan a Machine</h4>
+
+    <div id="readerContainer" style="display: none;">
+        <div id="reader"></div>
+    </div>
+
+    <div class="d-grid gap-2 mt-2">
+        <button id="startScan" type="button" class="btn btn-outline-primary">📷 Start Scanning</button>
+        <button id="stopScan" type="button" class="btn btn-outline-danger d-none">✋ Stop Scanning</button>
+    </div>
+</div>
+
+<div class="text-center my-2">
+    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('manualIdInput').classList.toggle('d-none')">
+        ✍️ Write Machine ID
+    </button>
+</div>
+
+<form method="post" class="mt-3">
+    <div id="manualIdInput" class="d-none">
+        <label for="MachineId">Machine ID:</label>
+        <input asp-for="MachineId" class="form-control" />
+    </div>
+
+    <div id="maintenanceSection" class="@(Model.MachineId > 0 ? "d-block" : "d-none")">
+        <div class="form-group mt-3" id="repairSection">
+            <label>📝 Repair Report:</label>
+            <textarea asp-for="RepairReport" class="form-control" rows="3" required></textarea>
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+            <button name="action" value="BeingRepaired" class="btn px-4 py-3 rounded-3 shadow w-100" style="max-width: 360px; background-color: #ffc107; color: black;">
+                🛠 Being Repaired
+            </button>
+            <button name="action" value="CannotBeRepaired" class="btn px-4 py-3 rounded-3 shadow w-100" style="max-width: 360px; background-color: #dc3545; color: white;">
+                ❌ Cannot Be Repaired
+            </button>
+            <button name="action" value="ScanError" onclick="handleScanError(event)" class="btn px-4 py-3 rounded-3 shadow w-100" style="max-width: 360px; background-color: #6c757d; color: white;">
+                🔄 Scan Error
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div class="alert alert-info mt-4">@Model.Message</div>
+    }
+</form>
+
+@section Scripts {
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <style>
+        .scanner-card {
+            max-width: 370px;
+            margin: auto;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            transition: all 0.3s ease;
+            min-height: 100px;
+        }
+
+            .scanner-card.expanded {
+                min-height: 280px;
+            }
+
+        #reader {
+            width: 100% !important;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+
+            #reader video {
+                width: 100% !important;
+                border-radius: 10px;
+            }
+    </style>
+
+    <script>
+        let html5Qrcode;
+        const scannerId = "reader";
+
+        const startBtn = document.getElementById("startScan");
+        const stopBtn = document.getElementById("stopScan");
+        const machineIdInput = document.querySelector("input[name='MachineId']");
+        const card = document.getElementById("scanCard");
+        const readerContainer = document.getElementById("readerContainer");
+        const maintenanceSection = document.getElementById("maintenanceSection");
+        const repairSection = document.getElementById("repairSection");
+
+        function onScanSuccess(decodedText) {
+            try {
+                const url = new URL(decodedText);
+                const id = url.searchParams.get("id");
+
+                if (id) {
+                    machineIdInput.value = id;
+                    stopScanning();
+                    document.querySelector("form").submit();
+                }
+            } catch {
+                console.log("Invalid QR");
+            }
+        }
+
+        function onScanError(error) {
+            // ignore
+        }
+
+        function startScanning() {
+            readerContainer.style.display = "block";
+            card.classList.add("expanded");
+
+            html5Qrcode = new Html5Qrcode(scannerId);
+            html5Qrcode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 250 },
+                onScanSuccess,
+                onScanError
+            );
+
+            startBtn.classList.add("d-none");
+            stopBtn.classList.remove("d-none");
+        }
+
+        function stopScanning() {
+            if (html5Qrcode) {
+                html5Qrcode.stop().then(() => {
+                    html5Qrcode.clear();
+                    html5Qrcode = null;
+                });
+            }
+
+            readerContainer.style.display = "none";
+            card.classList.remove("expanded");
+
+            startBtn.classList.remove("d-none");
+            stopBtn.classList.add("d-none");
+        }
+
+        function handleScanError(event) {
+            event.preventDefault();
+            machineIdInput.value = "";
+            maintenanceSection.classList.add("d-none");
+            stopScanning();
+        }
+
+        startBtn.addEventListener("click", startScanning);
+        stopBtn.addEventListener("click", stopScanning);
+    </script>
+}

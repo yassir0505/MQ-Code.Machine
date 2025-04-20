@@ -1,0 +1,125 @@
+﻿@page
+@model WebApplication1.Pages.Home.ApproveMachinesModel
+@{
+    ViewData["Title"] = "Approve Machine Requests";
+}
+
+<div class="d-flex align-items-center mb-3">
+    <a href="/Home/Home" class="btn btn-link p-0 me-2">
+        <i class="bi bi-arrow-left fs-4"></i>
+    </a>
+    <h4 class="mb-0"><i class="bi bi-check2-square me-2"></i> Pending Machine Requests</h4>
+</div>
+
+<!-- زر View My Created Machines -->
+<button class="btn btn-dark w-100 mb-3" style="max-width: 400px; margin-inline: auto;" type="button" data-bs-toggle="collapse" data-bs-target="#myMachinesTable">
+    🗂️ View My Created Machines
+</button>
+
+<!-- جدول الماكينات التي أنشأها المدير -->
+<div class="collapse mb-4 @(TempData["KeepTableOpen"] != null ? "show" : "")" id="myMachinesTable">
+    @if (Model.MyCreatedMachines.Any())
+    {
+        <table class="table table-bordered table-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>Machine Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var m in Model.MyCreatedMachines)
+                {
+                    <tr>
+                        <td>@m.Name</td>
+                        <td>
+                            <form method="post">
+                                <input type="hidden" name="machineId" value="@m.Id" />
+                                <input type="hidden" name="action" value="delete" />
+                                <button type="submit" class="btn btn-sm btn-danger">❌</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="text-muted">You haven't created any machines.</p>
+    }
+</div>
+
+<!-- عرض الماكينات في انتظار الموافقة -->
+@if (Model.PendingMachines.Count == 0)
+{
+    <div class="alert alert-info text-center">No pending machines at the moment.</div>
+}
+else
+{
+    <div class="row">
+        @foreach (var machine in Model.PendingMachines)
+        {
+            <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex">
+                <div class="card shadow-sm position-relative flex-fill" style="min-width: 100%;">
+                    @if (machine.Status == "Approved")
+                    {
+                        <form method="post" class="position-absolute top-0 end-0 m-2">
+                            <input type="hidden" name="machineId" value="@machine.Id" />
+                            <button name="action" value="hide" class="btn btn-sm btn-outline-danger" title="Hide from view">
+                                ❌
+                            </button>
+                        </form>
+                    }
+
+                    <div class="card-body">
+                        <h5 class="card-title">@machine.Name</h5>
+                        <p class="card-text">
+                            <strong>Type:</strong> @machine.Type <br />
+                            <strong>Year:</strong> @machine.Year <br />
+                            <strong>Company:</strong> @machine.Company <br />
+                            <strong>Requested by:</strong> @machine.RequestedBy
+                        </p>
+
+                        @if (machine.Status == "Approved")
+                        {
+                            <a class="btn btn-primary w-100" href="@($"/qr/machine_{machine.Id}.pdf")" target="_blank">
+                                <i class="bi bi-download me-1"></i> Download QR Code
+                            </a>
+                        }
+                        else
+                        {
+                            <form method="post" class="d-flex justify-content-between">
+                                <input type="hidden" name="machineId" value="@machine.Id" />
+                                <button class="btn btn-success w-50 me-1" name="action" value="approve">
+                                    ✅ Approve
+                                </button>
+                                <button class="btn btn-danger w-50 ms-1" name="action" value="reject">
+                                    ❌ Reject
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+    <script>
+        if (window.location.hash === "#myMachinesTable") {
+            const el = document.getElementById("myMachinesTable");
+            el.classList.add("show");
+        }
+
+        document.querySelector('[data-bs-target="#myMachinesTable"]').addEventListener("click", () => {
+            const el = document.getElementById("myMachinesTable");
+            if (!el.classList.contains("show")) {
+                window.location.hash = "#myMachinesTable";
+            } else {
+                history.pushState("", document.title, window.location.pathname);
+            }
+        });
+    </script>
+}

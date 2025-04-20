@@ -1,0 +1,63 @@
+﻿@page
+@using WebApplication1.Models
+@model WebApplication1.Pages.MachinePages.DetailsModel
+@{
+    ViewData["Title"] = "Machine Details";
+}
+
+@if (Model.Machine == null)
+{
+    <div class="alert alert-warning">
+        🚫 Machine not found.
+    </div>
+}
+else
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            Machine Details
+        </div>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>ID:</strong> @Model.Machine.Id</li>
+            <li class="list-group-item"><strong>Name:</strong> @Model.Machine.Name</li>
+            <li class="list-group-item"><strong>Year:</strong> @Model.Machine.Year</li>
+            <li class="list-group-item"><strong>Type:</strong> @Model.Machine.Type</li>
+            <li class="list-group-item"><strong>Serial:</strong> @Model.Machine.SerialNumber</li>
+            <li class="list-group-item"><strong>Company:</strong> @Model.Machine.Company</li>
+            <li class="list-group-item"><strong>Created By:</strong> @Model.Machine.CreatedBy</li>
+            <li class="list-group-item"><strong>Status:</strong> @Model.Machine.Status</li>
+            <li class="list-group-item"><strong>Repair Status:</strong> @Model.Machine.RepairStatus</li>
+        </ul>
+
+        <div class="card-body">
+            <a asp-page="/Machine/Edit" asp-route-id="@Model.Machine.Id" class="btn btn-primary">Edit</a>
+            <a asp-page="/Index" class="btn btn-secondary">Back to List</a>
+
+            @if (Model.Machine.RepairStatus == RepairStatus.None)
+            {
+                <form method="post" asp-page-handler="StartRepair">
+                    <input type="hidden" name="machineId" value="@Model.Machine.Id" />
+                    <button class="btn btn-warning mt-3">🛠 Machine is Being Repaired</button>
+                </form>
+            }
+            else if (Model.Machine.RepairStatus == RepairStatus.BeingRepaired)
+            {
+                <div class="mt-3">
+                    <p class="text-info">🔧 This machine is currently being repaired.</p>
+
+                    <form method="post" asp-page-handler="FinishRepair">
+                        <input type="hidden" name="machineId" value="@Model.Machine.Id" />
+                        <textarea name="report" class="form-control mb-2" placeholder="Write your repair report here..." required></textarea>
+                        <button name="result" value="repaired" class="btn btn-success me-2">✅ Machine Repaired</button>
+                        <button name="result" value="notrepairable" class="btn btn-danger">❌ Cannot be Repaired</button>
+                    </form>
+
+                    <form method="post" asp-page-handler="CancelRepair" class="mt-2">
+                        <input type="hidden" name="machineId" value="@Model.Machine.Id" />
+                        <button class="btn btn-secondary">🔄 Scanned by Mistake</button>
+                    </form>
+                </div>
+            }
+        </div>
+    </div>
+}

@@ -1,0 +1,68 @@
+﻿@page
+@model WebApplication1.Pages.ScanMachineModel
+@{
+    ViewData["Title"] = "Scanned Machine";
+}
+
+@if (Model.Machine == null)
+{
+    <div class="alert alert-danger">
+        ❌ Machine not found.
+    </div>
+}
+else
+{
+    <!-- ✅ BACK ICON TOP LEFT -->
+    <div class="d-flex align-items-center mb-3">
+        <a href="/Home/Home" class="me-2 text-decoration-none">
+            <i class="bi bi-arrow-left fs-4"></i>
+        </a>
+        <h3 class="mb-0">🔧 Machine Information</h3>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <p><strong>Company:</strong> @Model.Machine.Company</p>
+            <p><strong>Name (Type):</strong> @Model.Machine.Name (@Model.Machine.Type)</p>
+            <p><strong>Serial Number:</strong> @Model.Machine.SerialNumber</p>
+            <p><strong>Year of Production:</strong> @Model.Machine.Year</p>
+        </div>
+    </div>
+
+    <h4 class="mt-4 mb-3">🛠 Maintenance History</h4>
+
+    @if (Model.MaintenanceList.Any())
+    {
+        <table class="table table-bordered mt-2">
+            <thead class="table-light">
+                <tr>
+                    <th>👨 Technician</th>
+                    <th>🗓 Date</th>
+                    <th>📋 Description</th>
+                    <th>👁 Show Info</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.MaintenanceList)
+                {
+                    var tech = Model.TechnicianInfo.FirstOrDefault(t => t.Username == item.PerformedBy);
+                    <tr>
+                        <td>@item.PerformedBy</td>
+                        <td>@item.Date.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@item.Description</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info"
+                                    onclick="alert('Name: @tech?.FirstName @tech?.LastName\nEmail: @tech?.Email\nPhone: @tech?.PhoneNumber')">
+                                ℹ️
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="text-muted">No maintenance history found for this machine.</p>
+    }
+}

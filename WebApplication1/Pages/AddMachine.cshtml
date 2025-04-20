@@ -1,0 +1,59 @@
+﻿@page
+@model WebApplication1.Pages.AddMachineModel
+@{
+    ViewData["Title"] = "Add Machine Request";
+    var role = HttpContext.Session.GetString("Role");
+}
+
+<div class="container mt-4" style="max-width: 500px">
+    <h2 class="mb-4 text-center">Add New Machine</h2>
+
+    <form method="post">
+        <div class="form-group mb-3">
+            <label>Name</label>
+            <input asp-for="Input.Name" class="form-control" required />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Serial Number</label>
+            <input asp-for="Input.SerialNumber" class="form-control" required />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Type</label>
+            <input asp-for="Input.Type" class="form-control" required />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Year</label>
+            <select asp-for="Input.Year" class="form-control" required
+                    onfocus="this.size=7;" onblur="this.size=1;" onchange="this.size=1; this.blur();">
+                @for (int year = 2025; year >= 1900; year--)
+                {
+                    <option value="@year">@year</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group mb-4">
+            <label>Company</label>
+            <input asp-for="Input.Company" class="form-control" required />
+        </div>
+
+        <div class="text-center">
+            @if (role == "man")
+            {
+                <button type="submit" name="action" value="makeqr" class="btn btn-danger px-5 py-2">Make QR Code</button>
+            }
+            else
+            {
+                <button type="submit" name="action" value="submit" class="btn btn-primary px-5 py-2">Submit Request</button>
+            }
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Message))
+        {
+            <div class="alert alert-info mt-3 text-center">@Model.Message</div>
+        }
+    </form>
+</div>

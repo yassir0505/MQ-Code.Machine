@@ -1,0 +1,164 @@
+﻿@page
+@model WebApplication1.Pages.Home.HomeModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var role = HttpContext.Session.GetString("Role");
+    var fullName = HttpContext.Session.GetString("FullName");
+    var teamName = HttpContext.Session.GetString("TeamName");
+}
+
+<div class="text-center mb-4">
+    <h2>Hola, @fullName! 👋</h2>
+    <p>Welcome to your @role dashboard.</p>
+</div>
+
+<div class="scanner-card" id="scanCard">
+    <h4>🔍 Scan a Machine</h4>
+
+    <div id="readerContainer" style="display: none;">
+        <div id="reader"></div>
+    </div>
+
+    <div class="d-grid mb-3">
+        <button id="startScan" class="btn btn-outline-primary">Start Scanning</button>
+        <button id="stopScan" class="btn btn-outline-danger d-none mt-2">Stop Scanning</button>
+    </div>
+
+    <form method="get" asp-page="/ScanMachine">
+        <input type="hidden" name="id" id="machineIdInput" />
+        <button type="submit" class="btn btn-primary w-100" id="scanBtn" disabled>
+            🔍 View Machine
+        </button>
+    </form>
+</div>
+
+<div class="d-grid gap-2 mt-4 text-center">
+    @if ((role == "tech" && !string.IsNullOrEmpty(teamName)) || role == "tl")
+    {
+        <a asp-page="/Home/GroupChat" class="btn btn-outline-secondary">👥 Group Chat</a>
+    }
+
+    @if (role == "tech")
+    {
+        <a href="/UserHistory" class="btn btn-outline-secondary">⏱ View Maintenance History</a>
+    }
+    else if (role == "tl")
+    {
+        <a href="/UserHistory" class="btn btn-outline-secondary">⏱ View My History</a>
+        <a href="/TeamHistory" class="btn btn-outline-secondary">👥 View Team History</a>
+    }
+    else if (role == "man")
+    {
+        <a href="/ManagerHistory" class="btn btn-outline-secondary w-100 mb-2" style="max-width: 400px; margin-inline: auto;">
+            🧾 All Approved Maintenance History
+        </a>
+        <a href="/Home/ApproveMachines" class="btn btn-outline-success w-100 mb-2" style="max-width: 400px; margin-inline: auto;">
+            ✅ Approve Machine Requests
+        </a>
+        <a href="/Home/Dashboard" class="btn btn-outline-primary w-100 mb-2" style="max-width: 400px; margin-inline: auto;">
+            📊 View Dashboard
+        </a>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger mt-2">@TempData["Error"]</div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <style>
+        .scanner-card {
+            max-width: 370px;
+            margin: auto;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            transition: all 0.3s ease;
+        }
+
+            .scanner-card.expanded {
+                padding-bottom: 25px;
+            }
+
+        #reader {
+            width: 100% !important;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+
+            #reader video {
+                width: 100% !important;
+                border-radius: 10px;
+            }
+    </style>
+
+    <script>
+        let html5Qrcode;
+        const scannerId = "reader";
+
+        const startBtn = document.getElementById("startScan");
+        const stopBtn = document.getElementById("stopScan");
+        const scanBtn = document.getElementById("scanBtn");
+        const machineInput = document.getElementById("machineIdInput");
+        const card = document.getElementById("scanCard");
+        const readerContainer = document.getElementById("readerContainer");
+
+        function onScanSuccess(decodedText) {
+            try {
+                const url = new URL(decodedText);
+                const id = url.searchParams.get("id");
+
+                if (id) {
+                    machineInput.value = id;
+                    scanBtn.disabled = false;
+                    stopScanning();
+                }
+            } catch {
+                console.log("Invalid QR");
+            }
+        }
+
+        function onScanError(error) {
+            // ignore
+        }
+
+        function startScanning() {
+            readerContainer.style.display = "block";
+            card.classList.add("expanded");
+
+            html5Qrcode = new Html5Qrcode(scannerId);
+            html5Qrcode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 250 },
+                onScanSuccess,
+                onScanError
+            );
+
+            startBtn.classList.add("d-none");
+            stopBtn.classList.remove("d-none");
+        }
+
+        function stopScanning() {
+            if (html5Qrcode) {
+                html5Qrcode.stop().then(() => {
+                    html5Qrcode.clear();
+                    html5Qrcode = null;
+                });
+            }
+
+            readerContainer.style.display = "none";
+            card.classList.remove("expanded");
+
+            startBtn.classList.remove("d-none");
+            stopBtn.classList.add("d-none");
+        }
+
+        startBtn.addEventListener("click", startScanning);
+        stopBtn.addEventListener("click", stopScanning);
+    </script>
+}

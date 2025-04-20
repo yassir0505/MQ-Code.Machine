@@ -1,0 +1,47 @@
+﻿@page
+@model WebApplication1.Pages.Team.ManageTeamModel
+@{
+    ViewData["Title"] = "Manage Team";
+}
+
+<h2 class="mb-3">👥 Manage Team</h2>
+
+@if (!string.IsNullOrEmpty(Model.TeamName))
+{
+    <h5 class="mb-4">Team Name: <strong>@Model.TeamName</strong></h5>
+}
+
+<form method="post" asp-page-handler="Add" class="mb-4">
+    <div class="input-group">
+        <input asp-for="NewUsername" class="form-control" placeholder="Enter Technician's username..." required />
+        <button type="submit" class="btn btn-success">➕ Add</button>
+    </div>
+</form>
+
+@if (Model.TeamMembers.Any())
+{
+    <div class="row">
+        @foreach (var user in Model.TeamMembers)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@user.Username</h5>
+                        <p class="card-text">
+                            <strong>Email:</strong> @user.Email <br />
+                            <strong>Company:</strong> @user.CompanyName
+                        </p>
+                        <form method="post" asp-page-handler="Remove">
+                            <input type="hidden" name="username" value="@user.Username" />
+                            <button class="btn btn-danger btn-sm">❌ Remove</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p class="text-muted">No team members yet.</p>
+}

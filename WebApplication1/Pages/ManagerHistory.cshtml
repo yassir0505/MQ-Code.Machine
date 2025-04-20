@@ -1,0 +1,45 @@
+﻿@page
+@model WebApplication1.Pages.ManagerHistoryModel
+@{
+    ViewData["Title"] = "Approved Machines History";
+}
+
+<div class="d-flex align-items-center mb-3">
+    <a href="/Home/Home" class="btn btn-link p-0 me-2">
+        <i class="bi bi-arrow-left fs-4"></i>
+    </a>
+    <h4 class="mb-0"><i class="bi bi-clipboard-check me-2"></i> Maintenance History of Approved Machines</h4>
+</div>
+
+@if (Model.MaintenanceHistory.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Machine</th>
+                    <th>Year</th>
+                    <th>Performed By</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.MaintenanceHistory)
+                {
+                    <tr>
+                        <td>@item.Machine.Name</td>
+                        <td>@item.Machine.Year</td>
+                        <td>@item.PerformedBy</td>
+                        <td>@item.Date.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@item.Description</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <p class="text-muted">No maintenance history available.</p>
+}

@@ -1,0 +1,74 @@
+﻿@page
+@model WebApplication1.Pages.Home.GroupChatModel
+@{
+    ViewData["Title"] = "Group Chat";
+    var currentUsername = HttpContext.Session.GetString("Username");
+}
+
+<div class="d-flex align-items-center mb-3">
+    <a href="/Home/Home" class="btn btn-link p-0 me-2">
+        <i class="bi bi-arrow-left fs-4"></i>
+    </a>
+    <h4 class="mb-0"><i class="bi bi-people-fill me-2"></i> Group Chat</h4>
+</div>
+
+<div id="chatBox" class="p-3 bg-light rounded mb-3 overflow-auto" style="max-height: 65vh;">
+    @foreach (var msg in Model.Messages)
+    {
+        var isMine = msg.SenderUsername == currentUsername;
+        <div class="mb-3 d-flex @(isMine ? "justify-content-end" : "justify-content-start")">
+            <div class="d-flex flex-column" style="max-width: 80%;">
+                <span class="text-muted small mb-1 @(isMine ? "text-end" : "text-start")">
+                    @msg.SenderUsername
+                </span>
+                <div class="p-2 rounded-3 text-white @(isMine ? "bg-success" : "bg-secondary")">
+                    @msg.Content
+                </div>
+                <span class="text-muted small mt-1 @(isMine ? "text-end" : "text-start")" style="font-size: 0.75rem;">
+                    @msg.Timestamp.ToShortTimeString()
+                </span>
+            </div>
+        </div>
+    }
+</div>
+
+<form method="post" class="d-flex gap-2">
+    <input type="text" name="NewMessage" class="form-control" placeholder="Type your message..." required />
+    <button type="submit" class="btn btn-primary">
+        <i class="bi bi-send-fill"></i>
+    </button>
+</form>
+
+@section Scripts {
+    <script>
+        const chatBox = document.getElementById("chatBox");
+        let isAtBottom = true;
+
+        function scrollToBottom() {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        chatBox.addEventListener("scroll", () => {
+            const threshold = 100;
+            isAtBottom = chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight < threshold;
+        });
+
+        setInterval(() => {
+            fetch(window.location.href)
+                .then(response => response.text())
+                .then(html => {
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    const newChat = tempDiv.querySelector('#chatBox').innerHTML;
+
+                    document.getElementById('chatBox').innerHTML = newChat;
+
+                    if (isAtBottom) {
+                        scrollToBottom();
+                    }
+                });
+        }, 1000);
+
+        window.onload = scrollToBottom;
+    </script>
+}

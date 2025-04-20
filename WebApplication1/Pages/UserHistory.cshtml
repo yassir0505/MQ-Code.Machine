@@ -1,0 +1,40 @@
+﻿@page
+@model WebApplication1.Pages.UserHistoryModel
+@{
+    ViewData["Title"] = "My Maintenance History";
+}
+
+<div class="d-flex align-items-center mb-3">
+    <a href="/Home/Home" class="btn btn-link p-0 me-2">
+        <i class="bi bi-arrow-left fs-4"></i>
+    </a>
+    <h4 class="mb-0"><i class="bi bi-clock-history me-2"></i> My Maintenance History</h4>
+</div>
+
+@if (!Model.MaintenanceList.Any())
+{
+    <p>No maintenance records found.</p>
+}
+else
+{
+    <table class="table table-bordered mt-3">
+        <thead class="table-light">
+            <tr>
+                <th>Machine ID</th>
+                <th>Description</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var maintenance in Model.MaintenanceList)
+            {
+                <tr>
+                    <td>@maintenance.MachineId</td>
+                    <td>@maintenance.Description</td>
+                    <td>@maintenance.Date.ToString("yyyy-MM-dd HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
