@@ -1,9 +1,9 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using WebApplication1.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add SQLite connection
+// ✅ Add SQLite connection
 builder.Services.AddDbContext<MQContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("MQConnection")));
 
@@ -12,7 +12,7 @@ builder.Services.AddSession();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ✅ Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -30,11 +30,13 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
+// ✅ Ensure database and tables are created before any query
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<MQContext>();
+    var db = scope.ServiceProvider.GetRequiredService<MQContext>();
+    db.Database.EnsureCreated();
 
-    var usersWithNulls = context.Users
+    var usersWithNulls = db.Users
         .Where(u => u.FirstName == null || u.LastName == null)
         .ToList();
 
@@ -44,13 +46,7 @@ using (var scope = app.Services.CreateScope())
         user.LastName ??= "User";
     }
 
-    context.SaveChanges();
+    db.SaveChanges();
 }
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<MQContext>();
-    db.Database.EnsureCreated();
-}
-
 
 app.Run();
