@@ -5,8 +5,7 @@ using WebApplication1.Models;
 using QRCoder;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
-using System.Drawing.Imaging;
-using System.Drawing;
+using System.IO;
 
 namespace WebApplication1.Pages
 {
@@ -74,49 +73,48 @@ namespace WebApplication1.Pages
             if (role == "man")
             {
                 string qrContent = $"https://mq-machine.onrender.com/Machine/Details?id={machine.Id}";
+                byte[] qrBytes;
 
+                // ✅ Use PngByteQRCode for compatibility with Linux containers (Render)
                 using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
                 using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrContent, QRCodeGenerator.ECCLevel.Q))
-                using (QRCode qrCode = new QRCode(qrCodeData))
-                using (Bitmap qrCodeImage = qrCode.GetGraphic(20))
-                using (MemoryStream stream = new MemoryStream())
+                using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
                 {
-                    qrCodeImage.Save(stream, ImageFormat.Png);
-                    byte[] qrBytes = stream.ToArray();
+                    qrBytes = qrCode.GetGraphic(20);
+                }
 
-                    using (MemoryStream pdfStream = new MemoryStream())
+                using (MemoryStream pdfStream = new MemoryStream())
+                {
+                    Document doc = new Document(PageSize.A4);
+                    PdfWriter.GetInstance(doc, pdfStream);
+                    doc.Open();
+
+                    string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "logo.png");
+                    if (System.IO.File.Exists(logoPath))
                     {
-                        Document doc = new Document(PageSize.A4);
-                        PdfWriter.GetInstance(doc, pdfStream);
-                        doc.Open();
-
-                        string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "logo.png");
-                        if (System.IO.File.Exists(logoPath))
-                        {
-                            var logo = iTextSharp.text.Image.GetInstance(logoPath);
-                            logo.ScaleToFit(80f, 80f);
-                            logo.Alignment = Element.ALIGN_CENTER;
-                            doc.Add(logo);
-                        }
-
-                        var titleFont = FontFactory.GetFont("Arial", 18f, iTextSharp.text.Font.BOLD, BaseColor.BLACK);
-                        var title = new Paragraph("Machine QR Code\n\n", titleFont) { Alignment = Element.ALIGN_CENTER };
-                        doc.Add(title);
-
-                        var idFont = FontFactory.GetFont("Arial", 14f, iTextSharp.text.Font.BOLD, BaseColor.BLACK);
-                        var id = new Paragraph($"Machine ID: {machine.Id}\n\n", idFont) { Alignment = Element.ALIGN_CENTER };
-                        doc.Add(id);
-
-                        var qrImg = iTextSharp.text.Image.GetInstance(qrBytes);
-                        qrImg.ScaleToFit(300f, 300f);
-                        qrImg.Alignment = Element.ALIGN_CENTER;
-                        doc.Add(qrImg);
-
-                        doc.Close();
-
-                        byte[] pdfBytes = pdfStream.ToArray();
-                        return File(pdfBytes, "application/pdf", $"machine_{machine.Id}.pdf");
+                        var logo = iTextSharp.text.Image.GetInstance(logoPath);
+                        logo.ScaleToFit(80f, 80f);
+                        logo.Alignment = Element.ALIGN_CENTER;
+                        doc.Add(logo);
                     }
+
+                    var titleFont = FontFactory.GetFont("Arial", 18f, Font.BOLD, BaseColor.BLACK);
+                    var title = new Paragraph("Machine QR Code\n\n", titleFont) { Alignment = Element.ALIGN_CENTER };
+                    doc.Add(title);
+
+                    var idFont = FontFactory.GetFont("Arial", 14f, Font.BOLD, BaseColor.BLACK);
+                    var id = new Paragraph($"Machine ID: {machine.Id}\n\n", idFont) { Alignment = Element.ALIGN_CENTER };
+                    doc.Add(id);
+
+                    var qrImg = iTextSharp.text.Image.GetInstance(qrBytes);
+                    qrImg.ScaleToFit(300f, 300f);
+                    qrImg.Alignment = Element.ALIGN_CENTER;
+                    doc.Add(qrImg);
+
+                    doc.Close();
+
+                    byte[] pdfBytes = pdfStream.ToArray();
+                    return File(pdfBytes, "application/pdf", $"machine_{machine.Id}.pdf");
                 }
             }
             else
