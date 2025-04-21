@@ -53,21 +53,21 @@ namespace WebApplication1.Pages.Home
                 byte[] qrBytes;
 
                 // ✅ Generate QR Code as byte[] PNG
-                using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
+                using (QRCodeGenerator qrGenerator = new())
                 using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrContent, QRCodeGenerator.ECCLevel.Q))
-                using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
+                using (PngByteQRCode qrCode = new(qrCodeData))
                 {
-                    qrBytes = qrCode.GetGraphic(20); // direct byte[]
+                    qrBytes = qrCode.GetGraphic(20);
                 }
 
                 // ✅ Generate PDF in memory
-                using (MemoryStream pdfStream = new MemoryStream())
+                using (MemoryStream pdfStream = new())
                 {
-                    Document doc = new Document(PageSize.A4);
+                    Document doc = new(PageSize.A4);
                     PdfWriter.GetInstance(doc, pdfStream);
                     doc.Open();
 
-                    // Logo
+                    // ✅ Add logo if exists
                     string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "logo.png");
                     if (System.IO.File.Exists(logoPath))
                     {
@@ -77,17 +77,17 @@ namespace WebApplication1.Pages.Home
                         doc.Add(logo);
                     }
 
-                    // Title
+                    // ✅ Add title
                     var titleFont = FontFactory.GetFont("Arial", 18f, Font.BOLD, BaseColor.BLACK);
                     var title = new Paragraph("Machine QR Code\n\n", titleFont) { Alignment = Element.ALIGN_CENTER };
                     doc.Add(title);
 
-                    // Machine ID
+                    // ✅ Add Machine ID
                     var idFont = FontFactory.GetFont("Arial", 14f, Font.BOLD, BaseColor.BLACK);
                     var id = new Paragraph($"Machine ID: {machine.Id}\n\n", idFont) { Alignment = Element.ALIGN_CENTER };
                     doc.Add(id);
 
-                    // QR Code
+                    // ✅ Add QR Code
                     var qrImg = iTextSharp.text.Image.GetInstance(qrBytes);
                     qrImg.ScaleToFit(300f, 300f);
                     qrImg.Alignment = Element.ALIGN_CENTER;
