@@ -8,19 +8,22 @@
 
 	<ItemGroup>
 		<!-- QR code generation -->
-		<PackageReference Include="QRCoder" Version="1.4.1" />
+		<PackageReference Include="QRCoder" Version="1.6.0" />
 		<!-- PDF generation -->
 		<PackageReference Include="iTextSharp" Version="5.5.13.4" />
 		<!-- PostgreSQL support only -->
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.8" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
 		<!-- EF Core tools -->
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<!-- Optional: needed for migration & CLI -->
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0">
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<!-- Fonts -->
-		<PackageReference Include="System.Drawing.Common" Version="9.0.0" />
+		<PackageReference Include="System.Drawing.Common" Version="9.0.4" />
 	</ItemGroup>
 
 	<ItemGroup>
